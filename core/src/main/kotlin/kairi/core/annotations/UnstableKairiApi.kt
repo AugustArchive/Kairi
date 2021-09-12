@@ -20,10 +20,20 @@
  * SOFTWARE.
  */
 
-dependencies {
-    // Ktor (HTTP / WebSockets)
-    implementation("io.ktor:ktor-client-serialization:1.6.3")
-    implementation("io.ktor:ktor-client-websockets:1.6.3")
-    implementation("io.ktor:ktor-client-okhttp:1.6.3")
-    api("io.ktor:ktor-client-core:1.6.3")
-}
+package kairi.core.annotations
+
+/**
+ * Marks this function, class, constructor, property, or type alias as unstable or unsafe.
+ *
+ * With Kairi, unstable things mean that BUGS can occur, but less likely to.
+ */
+@RequiresOptIn(
+    message = "This feature is experimental, please opt-in to remove this warning",
+    level = RequiresOptIn.Level.WARNING
+)
+@MustBeDocumented
+@Target(
+    AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.CONSTRUCTOR,
+    AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS
+)
+annotation class UnstableKairiApi

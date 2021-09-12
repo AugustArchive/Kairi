@@ -77,7 +77,7 @@ subprojects {
     spotless {
         kotlin {
             trimTrailingWhitespace()
-            licenseHeaderFile("${rootProject.projectDir}/assets/HEADER")
+            licenseHeaderFile("${rootProject.projectDir}/assets/HEADING")
             endWithNewline()
 
             // We can't use the .editorconfig file, so we'll have to specify it here
