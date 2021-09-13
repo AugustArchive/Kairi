@@ -22,4 +22,56 @@
 
 package kairi.core
 
-class KairiBuilder
+import io.ktor.client.*
+import io.ktor.client.engine.okhttp.*
+import io.ktor.client.features.websocket.*
+import kairi.core.annotations.KairiDsl
+import kotlin.properties.Delegates
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+
+@KairiDsl
+class KairiBuilder {
+    /**
+     * The API url to use to query objects
+     */
+    var useApiUrl: String = "https://api.revolt.chat"
+
+    /**
+     * Attachable error callback when Kairi has reached an exception, useful
+     * for logging errors.
+     */
+    var errorCallback: ((Throwable) -> Unit)? = null
+
+    /**
+     * Sets your http client implementation here if you wish.
+     */
+    @OptIn(ExperimentalTime::class)
+    var httpClient: HttpClient = HttpClient(OkHttp) {
+        expectSuccess = false
+        install(WebSockets) {
+            pingInterval = Duration.milliseconds(30).inWholeMilliseconds
+        }
+    }
+
+    /**
+     * The token to use to connect to Revolt's gateway
+     */
+    var token: String by Delegates.notNull()
+
+    /**
+     * Sets the error callback
+     * @param callback The callback function to use.
+     */
+    fun onError(callback: (Throwable) -> Unit) {
+        errorCallback = callback
+    }
+
+    /**
+     * Sets the API url to use
+     * @param url The URL to use
+     */
+    fun setApiUrl(url: String) {
+        useApiUrl = url
+    }
+}

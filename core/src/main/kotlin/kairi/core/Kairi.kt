@@ -21,3 +21,48 @@
  */
 
 package kairi.core
+
+import kairi.core.gateway.Gateway
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.runBlocking
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
+
+/**
+ * DSL function to create a [Kairi] instance.
+ * @param block The builder to use when creating an instance.
+ * @return A [Kairi] instance with your options.
+ */
+@OptIn(ExperimentalContracts::class)
+fun Kairi(block: KairiBuilder.() -> Unit): Kairi {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
+    return Kairi(KairiBuilder().apply(block))
+}
+
+/**
+ * Represents the main instance to run your Revolt bot on.
+ * @param builder The builder used to connect to Revolt's services.
+ */
+class Kairi internal constructor(val builder: KairiBuilder) {
+    private val gateway = Gateway(
+        builder.httpClient,
+        this,
+        MutableSharedFlow(extraBufferCapacity = Int.MAX_VALUE),
+        Executors.newCachedThreadPool(KairiThreadFactory()).asCoroutineDispatcher()
+    )
+
+    /**
+     * Launches your bot to the skies! I mean, it'll connect your bot
+     * to Revolt. :3
+     */
+    fun launch() = runBlocking {
+
+    }
+}
