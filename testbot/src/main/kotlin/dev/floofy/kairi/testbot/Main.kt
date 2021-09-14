@@ -20,4 +20,41 @@
  * SOFTWARE.
  */
 
-package kairi.core.entities
+package dev.floofy.kairi.testbot
+
+import kairi.core.Kairi
+import kairi.core.events.ReadyEvent
+import kairi.core.on
+import kotlinx.coroutines.runBlocking
+import org.slf4j.LoggerFactory
+import kotlin.system.exitProcess
+
+object Main {
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        if (args.isEmpty()) {
+            logger.error("You need to append a token after `java -jar testbot.jar [token]`")
+            exitProcess(1)
+        }
+
+        logger.info("Launching Kairi...")
+        val bot = Kairi {
+            token = args[0]
+            shutdownHook = true
+
+            onError {
+                logger.error("Unhandled error has occured:", it)
+            }
+        }
+
+        runBlocking {
+            bot.on<ReadyEvent> {
+                logger.info("Logged in as ${bot.selfUser.username} (${bot.selfUser.id})")
+            }
+
+            bot.launch()
+        }
+    }
+}

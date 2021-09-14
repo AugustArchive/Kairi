@@ -20,11 +20,19 @@
  * SOFTWARE.
  */
 
-dependencies {
-    // Ktor (HTTP / WebSockets)
-    implementation("io.ktor:ktor-client-serialization:1.6.3")
-    implementation("io.ktor:ktor-client-websockets:1.6.3")
-    implementation("io.ktor:ktor-client-okhttp:1.6.3")
-    api("io.ktor:ktor-client-core:1.6.3")
-    api("org.slf4j:slf4j-api:1.7.32")
-}
+package kairi.core.entities
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class UserEntity(
+    @SerialName("_id")
+    val id: String,
+    val username: String,
+    val badges: Int,
+    val avatar: AvatarEntity,
+    val bot: BotEntity,
+    val relationship: String,
+    val online: Boolean
+)

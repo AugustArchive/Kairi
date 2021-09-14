@@ -20,3 +20,34 @@
  * SOFTWARE.
  */
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+plugins {
+    id("com.github.johnrengelman.shadow") version "7.0.0"
+    application
+}
+
+dependencies {
+    implementation(project(":core"))
+    implementation("org.slf4j:slf4j-simple:1.7.32")
+}
+
+application {
+    mainClass.set("dev.floofy.kairi.testbot.Main")
+    java {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+tasks.withType<ShadowJar> {
+    archiveFileName.set("testbot.jar")
+    mergeServiceFiles()
+
+    manifest {
+        attributes(mapOf(
+            "Manifest-Version" to "1.0.0",
+            "Main-Class" to "dev.floofy.kairi.testbot.Main"
+        ))
+    }
+}

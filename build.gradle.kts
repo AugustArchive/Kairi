@@ -33,11 +33,13 @@ buildscript {
     dependencies {
         classpath("com.diffplug.spotless:spotless-plugin-gradle:5.15.0")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.30")
+        classpath("org.jetbrains.kotlin:kotlin-serialization:1.5.30")
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.4.30")
     }
 }
 
 plugins {
+    kotlin("plugin.serialization") version "1.5.30"
     id("com.diffplug.spotless") version "5.15.0"
     id("org.jetbrains.dokka") version "1.4.30"
     kotlin("jvm") version "1.5.30"
@@ -59,6 +61,7 @@ subprojects {
     apply(plugin = "kotlin")
     apply(plugin = "maven-publish")
     apply(plugin = "org.jetbrains.dokka")
+    apply(plugin = "org.jetbrains.kotlin.plugin.serialization")
     apply(plugin = "com.diffplug.spotless")
 
     repositories {
@@ -100,98 +103,100 @@ subprojects {
         )
     }
 
-    val publishingProps = try {
-        Properties().apply { load(file("${rootProject.projectDir}/gradle/publishing.properties").reader()) }
-    } catch(e: Exception) {
-        Properties()
-    }
-
-    val sourcesJar by tasks.registering(Jar::class) {
-        archiveClassifier.set("sources")
-        from(sourceSets.main.get().allSource)
-    }
-
-    val dokkaJar by tasks.registering(Jar::class) {
-        group = JavaBasePlugin.DOCUMENTATION_GROUP
-        description = "Assemble Kotlin documentation with Dokka"
-
-        archiveClassifier.set("javadoc")
-        from(tasks.dokkaHtml)
-        dependsOn(tasks.dokkaHtml)
-    }
-
-    tasks.dokkaHtml.configure {
-        outputDirectory.set(file("${project.projectDir}/docs"))
-        dokkaSourceSets {
-            configureEach {
-                platform.set(org.jetbrains.dokka.Platform.jvm)
-                sourceLink {
-                    localDirectory.set(file("src/main/kotlin"))
-                    remoteUrl.set(
-                        uri("https://github.com/auguwu/Kairi/tree/master/${project.name.replace("-", "/")}").toURL()
-                    )
-
-                    remoteLineSuffix.set("#L")
-                }
-
-                jdkVersion.set(11)
-            }
+    if (project.name != "testbot") {
+        val publishingProps = try {
+            Properties().apply { load(file("${rootProject.projectDir}/gradle/publishing.properties").reader()) }
+        } catch(e: Exception) {
+            Properties()
         }
-    }
 
-    publishing {
-        publications {
-            create<MavenPublication>("Kairi") {
-                from(components["kotlin"])
-                groupId = "dev.floofy.kairi"
-                artifactId = "kairi-${project.displayName}"
-                version = rootProject.version as String
+        val sourcesJar by tasks.registering(Jar::class) {
+            archiveClassifier.set("sources")
+            from(sourceSets.main.get().allSource)
+        }
 
-                artifact(sourcesJar.get())
-                artifact(dokkaJar.get())
+        val dokkaJar by tasks.registering(Jar::class) {
+            group = JavaBasePlugin.DOCUMENTATION_GROUP
+            description = "Assemble Kotlin documentation with Dokka"
 
-                pom {
-                    description.set("Experimental Kotlin library for Revolt.")
-                    name.set("kairi-${project.displayName}")
-                    url.set("https://kairi.floofy.dev")
+            archiveClassifier.set("javadoc")
+            from(tasks.dokkaHtml)
+            dependsOn(tasks.dokkaHtml)
+        }
 
-                    organization {
-                        name.set("Noel")
-                        url.set("https://floofy.dev")
+        tasks.dokkaHtml.configure {
+            outputDirectory.set(file("${project.projectDir}/docs"))
+            dokkaSourceSets {
+                configureEach {
+                    platform.set(org.jetbrains.dokka.Platform.jvm)
+                    sourceLink {
+                        localDirectory.set(file("src/main/kotlin"))
+                        remoteUrl.set(
+                            uri("https://github.com/auguwu/Kairi/tree/master/${project.name.replace("-", "/")}").toURL()
+                        )
+
+                        remoteLineSuffix.set("#L")
                     }
 
-                    developers {
-                        developer {
+                    jdkVersion.set(11)
+                }
+            }
+        }
+
+        publishing {
+            publications {
+                create<MavenPublication>("Kairi") {
+                    from(components["kotlin"])
+                    groupId = "dev.floofy.kairi"
+                    artifactId = "kairi-${project.displayName}"
+                    version = rootProject.version as String
+
+                    artifact(sourcesJar.get())
+                    artifact(dokkaJar.get())
+
+                    pom {
+                        description.set("Experimental Kotlin library for Revolt.")
+                        name.set("kairi-${project.displayName}")
+                        url.set("https://kairi.floofy.dev")
+
+                        organization {
                             name.set("Noel")
+                            url.set("https://floofy.dev")
                         }
-                    }
 
-                    issueManagement {
-                        system.set("GitHub")
-                        url.set("https://github.com/auguwu/Kairi/issues")
-                    }
-
-                    licenses {
-                        license {
-                            name.set("MIT")
-                            url.set("https://opensource.org/licenses/MIT")
+                        developers {
+                            developer {
+                                name.set("Noel")
+                            }
                         }
-                    }
 
-                    scm {
-                        connection.set("scm:git:ssh://github.com/auguwu/Kairi.git")
-                        developerConnection.set("scm:git:ssh://git@github.com:auguwu/Kairi.git")
-                        url.set("https://github.com/auguwu/Kairi")
+                        issueManagement {
+                            system.set("GitHub")
+                            url.set("https://github.com/auguwu/Kairi/issues")
+                        }
+
+                        licenses {
+                            license {
+                                name.set("MIT")
+                                url.set("https://opensource.org/licenses/MIT")
+                            }
+                        }
+
+                        scm {
+                            connection.set("scm:git:ssh://github.com/auguwu/Kairi.git")
+                            developerConnection.set("scm:git:ssh://git@github.com:auguwu/Kairi.git")
+                            url.set("https://github.com/auguwu/Kairi")
+                        }
                     }
                 }
             }
-        }
 
-        repositories {
-            maven(url = "s3://maven.floofy.dev/repo/releases") {
-                credentials(AwsCredentials::class.java) {
-                    accessKey = publishingProps.getProperty("s3.accessKey") ?: System.getProperty("dev.floofy.s3.accessKey") ?: ""
-                    secretKey = publishingProps.getProperty("s3.secretKey") ?: System.getProperty("dev.floofy.s3.secretKey") ?: ""
+            repositories {
+                maven(url = "s3://maven.floofy.dev/repo/releases") {
+                    credentials(AwsCredentials::class.java) {
+                        accessKey = publishingProps.getProperty("s3.accessKey") ?: System.getProperty("dev.floofy.s3.accessKey") ?: ""
+                        secretKey = publishingProps.getProperty("s3.secretKey") ?: System.getProperty("dev.floofy.s3.secretKey") ?: ""
+                    }
                 }
             }
         }

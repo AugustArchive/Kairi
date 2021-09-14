@@ -20,4 +20,27 @@
  * SOFTWARE.
  */
 
-package kairi.core.gateway
+package kairi.core.entities
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class AvatarEntity(
+    @SerialName("_id")
+    val id: String,
+    val tag: String,
+    val filename: String,
+    val metadata: AvatarMetadata,
+
+    @SerialName("content_type")
+    val contentType: String,
+    val size: Int
+)
+
+@Serializable
+data class AvatarMetadata(
+    val type: String,
+    val width: Int,
+    val height: Int
+)

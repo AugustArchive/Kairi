@@ -20,4 +20,53 @@
  * SOFTWARE.
  */
 
-package kairi.core.events
+package kairi.core.types
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class ApiResponse(
+    val revolt: String,
+    val features: RevoltFeatures,
+    val ws: String,
+    val app: String,
+    val vapid: String
+)
+
+@Serializable
+data class RevoltFeatures(
+    val captcha: RevoltCaptcha,
+    val email: Boolean,
+    val autumn: AutumnApiResponse,
+    val january: JanuaryApiResponse,
+    val voso: VosoApiResponse,
+
+    @SerialName("invite_only")
+    val inviteOnly: Boolean
+)
+
+@Serializable
+data class RevoltCaptcha(
+    val enabled: Boolean,
+    val key: String?
+)
+
+@Serializable
+data class AutumnApiResponse(
+    val enabled: Boolean,
+    val url: String
+)
+
+@Serializable
+data class JanuaryApiResponse(
+    val enabled: Boolean,
+    val url: String
+)
+
+@Serializable
+data class VosoApiResponse(
+    val enabled: Boolean,
+    val url: String,
+    val ws: String
+)

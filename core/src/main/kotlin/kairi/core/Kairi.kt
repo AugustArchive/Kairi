@@ -21,3 +21,82 @@
  */
 
 package kairi.core
+
+import kairi.core.entities.UserEntity
+import kairi.core.events.Event
+import kairi.core.logging.logging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
+
+/**
+ * DSL function to create a [Kairi] instance.
+ * @param block The builder to use when creating an instance.
+ * @return A [Kairi] instance with your options.
+ */
+@OptIn(ExperimentalContracts::class)
+fun Kairi(block: KairiBuilder.() -> Unit): Kairi {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
+    return Kairi(KairiBuilder().apply(block))
+}
+
+/**
+ * Represents the main instance to run your Revolt bot on.
+ * @param builder The builder used to connect to Revolt's services.
+ */
+class Kairi internal constructor(val builder: KairiBuilder) {
+    private val executor = Executors.newCachedThreadPool(KairiThreadFactory())
+    private val logger by logging<Kairi>()
+    lateinit var selfUser: UserEntity
+
+    val gateway = Gateway(
+        builder.httpClient,
+        this,
+        MutableSharedFlow(extraBufferCapacity = Int.MAX_VALUE),
+        executor.asCoroutineDispatcher()
+    )
+
+    /**
+     * Launches your bot to the skies! I mean, it'll connect your bot
+     * to Revolt.
+     */
+    suspend fun launch() {
+        if (builder.shutdownHook) {
+            val thread = Thread({
+                logger.warn("Received CTRL+C call, now disconnecting...")
+                gateway.close()
+            }, "Kairi-ShutdownThread")
+
+            Runtime.getRuntime().addShutdownHook(thread)
+        }
+
+        gateway.start()
+    }
+}
+
+suspend inline fun <reified T: Event> Kairi.on(
+    scope: CoroutineScope = this.gateway,
+    noinline consumer: suspend T.() -> Unit
+) = this
+    .gateway
+    .eventFlow
+    .buffer(Channel.UNLIMITED)
+    .filterIsInstance<T>()
+    .onEach {
+        scope.launch {
+            kotlin.runCatching {
+                consumer(it)
+            }.onFailure {
+                this@on.builder.errorCallback?.invoke(it)
+            }
+        }
+    }.launchIn(scope)

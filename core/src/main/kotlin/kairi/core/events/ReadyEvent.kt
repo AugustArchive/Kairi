@@ -20,4 +20,14 @@
  * SOFTWARE.
  */
 
-package kairi.core.gateway.notifications
+package kairi.core.events
+
+import kairi.core.entities.UserEntity
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
+
+@Serializable
+data class ReadyEvent(
+    val users: List<UserEntity>,
+    val servers: List<JsonObject> // TODO: add data class
+): Event(EventType.Ready)
