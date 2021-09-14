@@ -24,11 +24,16 @@ package kairi.core
 
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
+<<<<<<< HEAD
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.features.websocket.*
 import kairi.core.annotations.KairiDsl
 import kotlinx.serialization.json.Json
+=======
+import io.ktor.client.features.websocket.*
+import kairi.core.annotations.KairiDsl
+>>>>>>> 373b7d57aff1471be70b641846581846e4e7ea86
 import kotlin.properties.Delegates
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -36,6 +41,7 @@ import kotlin.time.ExperimentalTime
 @KairiDsl
 class KairiBuilder {
     /**
+<<<<<<< HEAD
      * Adds a shutdown hook in the Runtime to close off gateways.
      */
     var shutdownHook: Boolean = false
@@ -48,6 +54,8 @@ class KairiBuilder {
     }
 
     /**
+=======
+>>>>>>> 373b7d57aff1471be70b641846581846e4e7ea86
      * The API url to use to query objects
      */
     var useApiUrl: String = "https://api.revolt.chat"
@@ -67,6 +75,7 @@ class KairiBuilder {
         install(WebSockets) {
             pingInterval = Duration.milliseconds(30).inWholeMilliseconds
         }
+<<<<<<< HEAD
 
         install(JsonFeature) {
             serializer = KotlinxSerializer(this@KairiBuilder.json)
@@ -77,6 +86,8 @@ class KairiBuilder {
                 followRedirects(true)
             }
         }
+=======
+>>>>>>> 373b7d57aff1471be70b641846581846e4e7ea86
     }
 
     /**
