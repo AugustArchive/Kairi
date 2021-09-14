@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /**
  * Copyright (c) 2021 Noel
  *
@@ -21,8 +20,6 @@
  * SOFTWARE.
  */
 
-=======
->>>>>>> 373b7d57aff1471be70b641846581846e4e7ea86
 package kairi.core.logging
 
 import org.slf4j.Logger
